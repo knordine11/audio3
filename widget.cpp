@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 #include "widget.h"
+#include "fftstuff.h"
 #include "xyseriesiodevice.h"
 
 #include <QAudioDevice>
@@ -15,9 +16,13 @@
 
 #include <QTimer>
 #include <QDebug>
+int fr_start = 0;
+int fr_size= 2048*2;
+int fr_end = fr_size - fr_start;
 
 Widget::Widget(const QAudioDevice &deviceInfo, QWidget *parent)
     : QWidget(parent)
+
     , m_chart(new QChart)
     , m_series(new QLineSeries)
 {
@@ -50,7 +55,7 @@ Widget::Widget(const QAudioDevice &deviceInfo, QWidget *parent)
     formatAudio.setSampleFormat(QAudioFormat::UInt8);
 
     m_audioSource = new QAudioSource(deviceInfo, formatAudio);
-    m_audioSource->setBufferSize(4000);
+    m_audioSource->setBufferSize(1000);
 
     m_device = new XYSeriesIODevice(m_series, this);
     m_device->open(QIODevice::WriteOnly);
@@ -70,7 +75,7 @@ void Widget::start_mic_stream()
 {
     m_audioSource->start(m_device);
     qDebug() << "started";
-    QTimer::singleShot(1000, this, &Widget::stop_mic_stream);
+    QTimer::singleShot(100, this, &Widget::stop_mic_stream);
     qDebug() << " AFTER QTimer ";
 }
 
@@ -80,4 +85,9 @@ void Widget::stop_mic_stream()
     qDebug() << "mic STOPPED ";
     m_device->close();
     qDebug() << "device CLOSED ";
+    FftStuff pa;
+
+    pa.make_sin(100,fr_start,fr_size);
+    pa.DoIt(fr_start,fr_size);
+    // pa.DoIt(100,fr_size);
 }

@@ -39,16 +39,19 @@ qint64 XYSeriesIODevice::writeData(const char *data, qint64 maxSize)
 
         for (int s = 0; s < start; ++s)
             m_buffer[s].setY(m_buffer.at(s + availableSamples).y());
-            totalCount++;                                                              // [{X0,0},{X1,0},{X2,0} ... ,{X1999,0}]
+            // totalCount++;                                                              // [{X0,0},{X1,0},{X2,0} ... ,{X1999,0}]
     }                                                                    // X = data from the MIC (16 bit int)
     // Widget ww;
     // ww.stop_mic_streem();
 
-    qDebug() <<"totalCount "<< totalCount;
+
 
     for (int s = start; s < sampleCount; ++s, data += resolution)
     {
         m_buffer[s].setY(qreal(uchar(*data) -128) / qreal(128));
+        rec_arr[totalCount] = data[s] ;
+        totalCount++;
+        // qDebug() <<"totalCount "<< totalCount;
     }
 
     m_series->replace(m_buffer);
